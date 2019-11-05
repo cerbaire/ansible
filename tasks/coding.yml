@@ -1,0 +1,4 @@
+- name: Install coding tools
+  apt: name={{item}}
+  with_items:
+    - code

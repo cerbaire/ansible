@@ -1,5 +1,15 @@
 - hosts: localhost
   become: true
+  pre_tasks:
+    - name: update repositories
+      apt: update_cache=yes
+      changed_when: False
+
   tasks:
-  - name: Install htop
-    apt: name=htop
+    - include: tasks/coding.yml
+    - name: Install packages
+      apt: name={{item}}
+      with_items:
+        - htop
+        - mc
+        - tmux

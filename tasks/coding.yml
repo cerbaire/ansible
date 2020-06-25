@@ -3,6 +3,12 @@
     pkg:
       - code # Visual Studio Code
 
+- name: Install git
+  apt:
+    name: git
+    state: latest
+    update_cache: yes
+
 - name: Update the repository cache and update package "nginx" to latest version using default release squeeze-backport
   apt:
     name: nginx

@@ -16,7 +16,12 @@
 #  unarchive:
 #    src: ~/MinimWatch-0.8.5.2-linux-intel.tgz
 #    dest: /usr/local/minimserver
-    
+- name: MinimServer | Create install dir
+  file:
+    path: /etc/some_directory
+    state: directory
+    mode: '0755'
+
 - name: MinimServer | Download & install files
   unarchive:
     src: http://jminim.com/brac/MinimWatch-0.8.5.2-linux-intel.tar.gz

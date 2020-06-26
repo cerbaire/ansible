@@ -18,7 +18,7 @@
 #    dest: /usr/local/minimserver
 - name: MinimServer | Create install dir
   file:
-    path: /etc/some_directory
+    path: /usr/local/minimserver
     state: directory
     mode: '0755'
 

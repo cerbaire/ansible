@@ -6,8 +6,9 @@
       changed_when: False
 
   tasks:
-    - include: tasks/coding.yml
     - include: tasks/env.yml
+    - include: tasks/coding.yml
+    - include: tasks/music.yml
     - name: Install packages
       apt:
         pkg:

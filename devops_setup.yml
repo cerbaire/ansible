@@ -1,0 +1,6 @@
+---
+- name: Setup DevOps environment
+  hosts: localhost
+  become: true
+  roles:
+    - devops_setup

@@ -14,4 +14,4 @@ sudo apt-get install ansible
 ## Execute a playbook file
 sudo ansible-pull -U https://github.com/cerbaire/ansible.git  
 ansible-playbook -i inventory playbooks/main.yaml  
-ansible-playbook -i inventory.ini devops_setup.yml
+ansible-playbook -i inventory.ini devops_setup.yml --ask-become-pass  

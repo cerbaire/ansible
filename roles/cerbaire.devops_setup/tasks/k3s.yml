@@ -1,0 +1,19 @@
+- name: Install k3s with embedded etcd
+  shell: |
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --cluster-init --datastore-endpoint=etcd" sh -
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Ensure KUBECONFIG is exported system-wide
+  lineinfile:
+    path: /etc/profile.d/k3s.sh
+    line: 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml'
+    create: yes
+    mode: '0755'
+  become: true
+
+- name: Make kubeconfig readable by all users
+  file:
+    path: /etc/rancher/k3s/k3s.yaml
+    mode: '0644'
+  become: true

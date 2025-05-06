@@ -3,4 +3,4 @@
   hosts: localhost
   become: true
   roles:
-    - devops_setup
+    - cerbaire.devops_setup

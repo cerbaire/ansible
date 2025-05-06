@@ -1,0 +1,7 @@
+---
+# defaults file for roles/cerbaire.minimserver
+minimserver_version: latest
+minimserver_install_dir: "{{ ansible_env.HOME }}/minimserver"
+minimserver_java_home: "/usr/lib/jvm/java-21-openjdk-amd64"
+minimserver_autostart: true
+ansible_user: "nicolas"

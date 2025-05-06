@@ -1,0 +1,6 @@
+---
+- name: Setup Molecule environment
+  hosts: localhost
+  become: false
+  roles:
+    - cerbaire.molecule_setup

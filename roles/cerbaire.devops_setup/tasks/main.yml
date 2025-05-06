@@ -1,0 +1,53 @@
+---
+# tasks file for roles/devops_setup
+- name: Install required packages
+  apt:
+    name:
+      - curl
+      - git
+      - unzip
+    state: present
+    update_cache: true
+  become: true
+
+- name: Install Docker
+  shell: |
+    curl -fsSL https://get.docker.com | sh
+  args:
+    creates: /usr/bin/docker
+
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_user_id }}"
+    groups: docker
+    append: yes
+
+- name: Install Docker Compose plugin
+  shell: |
+    mkdir -p ~/.docker/cli-plugins
+    curl -SL https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64 \
+      -o ~/.docker/cli-plugins/docker-compose
+    chmod +x ~/.docker/cli-plugins/docker-compose
+  args:
+    creates: ~/.docker/cli-plugins/docker-compose
+
+- name: Install k3s (lightweight Kubernetes)
+  shell: |
+    curl -sfL https://get.k3s.io | sh -
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Install Helm
+  shell: |
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  args:
+    creates: /usr/local/bin/helm
+
+- name: Install Terraform
+  shell: |
+    curl -fsSL https://releases.hashicorp.com/terraform/1.8.4/terraform_1.8.4_linux_amd64.zip -o terraform.zip
+    unzip terraform.zip
+    mv terraform /usr/local/bin/
+    rm terraform.zip
+  args:
+    creates: /usr/local/bin/terraform

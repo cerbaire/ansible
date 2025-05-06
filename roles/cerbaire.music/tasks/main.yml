@@ -1,0 +1,10 @@
+---
+# tasks file for roles/music
+- name: Install abcm2ps and ghostscript
+  apt:
+    name:
+      - abcm2ps
+      - ghostscript
+    state: present
+    update_cache: true
+  become: true

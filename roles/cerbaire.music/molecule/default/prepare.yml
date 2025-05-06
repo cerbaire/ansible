@@ -1,0 +1,15 @@
+---
+- name: Prepare Molecule test instance
+  hosts: all
+  tasks:
+    - name: Ensure Python 3 and pip are installed
+      apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+        update_cache: true
+
+    - name: Set python3 as default interpreter
+      raw: ln -sf /usr/bin/python3 /usr/bin/python
+      changed_when: false

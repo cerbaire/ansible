@@ -1,7 +1,6 @@
 ---
 - name: Install music environment
   hosts: localhost
-  become: true
+  become: false
   roles:
-    - music
-    
+    - cerbaire.music

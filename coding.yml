@@ -1,0 +1,6 @@
+---
+- name: Install coding tools
+  hosts: localhost
+  become: true
+  roles:
+    - cerbaire.coding_setup

@@ -1,0 +1,6 @@
+---
+- name: Install programmation languages
+  hosts: localhost
+  become: false
+  roles:
+    - cerbaire.language

@@ -15,3 +15,4 @@ sudo apt-get install ansible
 sudo ansible-pull -U https://github.com/cerbaire/ansible.git  
 ansible-playbook -i inventory playbooks/main.yaml  
 ansible-playbook -i inventory.ini devops_setup.yml --ask-become-pass  
+ansible-playbook -i inventory.ini molecule.yml --ask-become-pass

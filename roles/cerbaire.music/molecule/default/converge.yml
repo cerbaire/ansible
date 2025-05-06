@@ -1,0 +1,18 @@
+---
+- name: Verify abcm2ps is installed
+  hosts: all
+  gather_facts: false
+  roles:
+    - cerbaire.music
+  tasks:
+    - name: Check abcm2ps is installed
+      command: abcm2ps -h
+      register: abcm2ps_output
+      changed_when: false
+      failed_when: "'abcm2ps' not in abcm2ps_output.stdout and abcm2ps_output.rc != 0"
+
+    - name: Check ps2pdf (from ghostscript) is installed
+      command: which ps2pdf
+      register: ps2pdf_check
+      changed_when: false
+      failed_when: ps2pdf_check.rc != 0

@@ -1,3 +1,4 @@
+---
 galaxy_info:
   author: Nicolas ROQUEBERT <nicolas@roquebert.net>
   role_name: devops_setup
@@ -31,3 +32,4 @@ galaxy_info:
     #       Maximum 20 tags per role.
 
 dependencies: []
+...

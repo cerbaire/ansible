@@ -10,11 +10,11 @@
     update_cache: true
   become: true
 
-- name: Install k3s with embedded etcd
-  import_tasks: k3s.yml
+#- name: Install ctlptl
+#  import_tasks: ctlptl.yml
 
-- name: Install Docker
-  import_tasks: docker.yml
+- name: Configure MOTD
+  import_tasks: motd.yml
 
 - name: Install Helm
   shell: |
@@ -30,3 +30,4 @@
     rm terraform.zip
   args:
     creates: /usr/local/bin/terraform
+...

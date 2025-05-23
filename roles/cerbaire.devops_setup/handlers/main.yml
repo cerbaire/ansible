@@ -1,2 +1,10 @@
 ---
 # handlers file for roles/devops_setup
+- name: Dependencies installed
+  ansible.builtin.debug:
+    msg: "Dependencies installed"
+
+- name: MOTD changed
+  ansible.builtin.debug:
+    msg: "MOTD changed"
+...

@@ -1,0 +1,25 @@
+---
+- name: Install required packages
+  ansible.builtin.apt:
+    name:
+      - update-motd
+      - git
+      - unzip
+    state: present
+    update_cache: true
+  become: true
+
+- name: Confiure a MOTD
+  ansible.builtin.copy:
+    content: "{{ motd_centos }}"
+    dest: /etc/motd
+  notify: MOTD changed
+  when: ansible_distribution == "CentOS"
+
+- name: Confiure a MOTD
+  ansible.builtin.copy:
+    content: "{{ motd_ubuntu }}"
+    dest: /etc/motd
+  notify: MOTD changed
+  when: ansible_distribution == "Ubuntu"
+...

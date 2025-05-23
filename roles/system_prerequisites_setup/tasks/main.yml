@@ -1,7 +1,7 @@
 ---
 # tasks file for roles/system_prerequisites_setup
 - name: Ensure CA certificates are installed and updated
-  apt:
+  ansible.builtin.apt:
     name: ca-certificates
     state: latest
     update_cache: true
@@ -10,3 +10,4 @@
 - name: Update certificate authority store
   command: update-ca-certificates
   become: true
+...

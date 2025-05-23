@@ -4,3 +4,4 @@
   become: true
   roles:
     - cerbaire.devops_setup
+...

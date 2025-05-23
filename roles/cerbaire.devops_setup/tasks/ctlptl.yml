@@ -1,0 +1,13 @@
+---
+- name: Install ctlptl (to manage registry)
+  get_url:
+    url: "https://github.com/tilt-dev/ctlptl/releases/download/v0.8.10/ctlptl.0.8.10.linux.x86_64.tar.gz"
+    dest: /tmp/ctlptl.tar.gz
+
+- name: Extract ctlptl
+  unarchive:
+    src: /tmp/ctlptl.tar.gz
+    dest: /usr/local/bin
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+...

@@ -1,0 +1,47 @@
+# roles/k3s_dev_environment/vars/main.yml
+
+# IMPORTANT: Set this to the non-root user you want to configure the environment for
+# <<< CHANGE THIS to your actual Linux username
+dev_user: "nicolas"
+
+# Tool versions (verify latest stable versions when running)
+k3s_version: "v1.33.0+k3s1"
+helm_version: "v3.18.0"
+# Should ideally match K3s major.minor
+kubectl_version: "v1.33.0"
+buildkit_version: "v0.22.0"
+tilt_version: "0.34.3"
+
+# K3s configuration
+k3s_data_dir: "/var/lib/rancher/k3s"
+k3s_install_args: >-
+  --write-kubeconfig-mode 644
+  --disable traefik
+  --disable servicelb
+  --node-name {{ ansible_hostname }}
+
+# BuildKit configuration
+buildkit_user: "buildkit"
+buildkit_group: "buildkit"
+buildkit_data_dir: "/var/lib/buildkit"
+buildkit_socket_path: "unix:///run/buildkit/buildkitd.sock"
+buildkit_tcp_addr: "tcp://127.0.0.1:1234" # For buildkitd to listen on
+
+# Local Registry configuration
+registry_namespace: "local-registry"
+registry_deployment_name: "local-docker-registry" # Must match metadata.name in local-registry-k8s.yaml
+registry_service_name: "local-registry-service"   # Must match metadata.name in local-registry-k8s.yaml
+registry_image: "registry:2"
+registry_node_port: 30500 # Port on the host to access the registry
+registry_host_address: "localhost" # How BuildKit/Tilt will address the registry
+k3s_dev_environment_registry_host_address: "localhost"
+
+# Tilt Sample Project
+default_sample_lang: "go" # Options: go, typescript, python, csharp, rust, java
+tilt_sample_app_dir_base: "/home" # Base directory for user's sample app
+tilt_sample_app_name: "tilt_sample_app"
+# Derived in tasks: tilt_sample_app_dir: "{{ tilt_sample_app_dir_base }}/{{ dev_user }}/{{ tilt_sample_app_name }}"
+tilt_sample_image_name: "tilt-sample-app-image" # This placeholder is used in k8s-app.yaml and Tiltfile
+
+# System paths
+local_bin_path: "/usr/local/bin"

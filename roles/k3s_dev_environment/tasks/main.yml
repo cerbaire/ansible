@@ -1,0 +1,29 @@
+# roles/k3s_dev_environment/tasks/main.yml
+- name: Include preparation tasks
+  ansible.builtin.include_tasks: 00_prepare_system.yml
+
+- name: Include tool installation tasks
+  ansible.builtin.include_tasks: 01_install_tools.yml
+
+- name: Include K3s installation tasks
+  ansible.builtin.include_tasks: 02_install_k3s.yml
+
+- name: Include K3s user configuration tasks
+  ansible.builtin.include_tasks: 03_configure_k3s_user.yml
+
+- name: Include BuildKit installation tasks
+  ansible.builtin.include_tasks: 04_install_buildkit.yml
+
+- name: Include local registry deployment tasks
+  ansible.builtin.include_tasks: 05_deploy_local_registry.yml
+  vars:
+    kubeconfig_path: "/etc/rancher/k3s/k3s.yaml"
+
+- name: Include K3s registry configuration tasks
+  ansible.builtin.include_tasks: 06_configure_k3s_registry.yml
+
+- name: Include Tilt installation tasks
+  ansible.builtin.include_tasks: 07_install_tilt.yml
+
+#- name: Include Tilt sample project setup tasks
+#  ansible.builtin.include_tasks: 08_setup_sample_tilt_project.yml

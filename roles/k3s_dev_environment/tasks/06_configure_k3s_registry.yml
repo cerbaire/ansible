@@ -1,0 +1,16 @@
+# roles/k3s_dev_environment/tasks/06_configure_k3s_registry.yml
+- name: Create K3s registries configuration directory if not exists
+  ansible.builtin.file:
+    path: "/etc/rancher/k3s"
+    state: directory
+    mode: '0755'
+
+- name: Template K3s registries.yaml for insecure local registry
+  ansible.builtin.template:
+    src: k3s_registries.yaml.j2
+    dest: "/etc/rancher/k3s/registries.yaml"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart K3s
+  

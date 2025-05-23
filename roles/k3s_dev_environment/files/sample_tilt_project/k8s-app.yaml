@@ -1,0 +1,57 @@
+# roles/k3s_dev_environment/files/sample_tilt_project_LANG/k8s-app.yaml
+# AND roles/k3s_dev_environment/files/sample_tilt_project/k8s-app.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tilt-sample-app # This name is referenced in Tiltfile's k8s_resource
+  labels:
+    app: tilt-sample-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tilt-sample-app
+  template:
+    metadata:
+      labels:
+        app: tilt-sample-app
+    spec:
+      containers:
+      - name: app # Name of the container
+        # This image name ('tilt-sample-app-image') must match the 'IMAGE_NAME'
+        # variable defined in the Tiltfile (Tiltfile.j2 -> vars.tilt_sample_image_name)
+        # for Tilt to correctly substitute it with the tagged image.
+        image: tilt-sample-app-image
+        ports:
+        - containerPort: 8080 # Ensure your app listens on this port inside the container
+        imagePullPolicy: Always
+        readinessProbe: # Example, adjust path and port
+          httpGet:
+            path: /health # Most samples now include a /health endpoint
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
+        livenessProbe: # Example
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 2
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tilt-sample-app-service
+spec:
+  selector:
+    app: tilt-sample-app
+  ports:
+  - protocol: TCP
+    port: 80 # External port for the service (K3s LoadBalancer will use this)
+    targetPort: 8080 # Pod's containerPort
+  type: LoadBalancer
+  

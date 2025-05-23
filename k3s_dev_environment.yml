@@ -1,0 +1,21 @@
+---
+- name: Setup K3s Development Environment
+  hosts: local
+  # Most tasks require sudo
+  become: true
+  vars_files:
+    - roles/k3s_dev_environment/vars/main.yml # Defines user, versions etc.
+  pre_tasks:
+    - name: Ensure python3-pip is present
+      ansible.builtin.apt:
+        name: python3-pip
+        state: present
+        update_cache: true
+
+    - name: Ensure Kubernetes Python library is installed
+      ansible.builtin.pip:
+        name: kubernetes
+        state: present
+  roles:
+    - role: k3s_dev_environment
+...

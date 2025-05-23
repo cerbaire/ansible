@@ -1,0 +1,35 @@
+# roles/k3s_dev_environment/tasks/03_configure_k3s_user.yml
+- name: Create .kube directory for {{ dev_user }}
+  ansible.builtin.file:
+    path: "/home/{{ dev_user }}/.kube"
+    state: directory
+    owner: "{{ dev_user }}"
+    group: "{{ dev_user }}" # Or user's primary group, obtained via a fact
+    mode: '0700'
+
+- name: Copy K3s kubeconfig to {{ dev_user }}'s .kube directory
+  ansible.builtin.copy:
+    src: "/etc/rancher/k3s/k3s.yaml"
+    dest: "/home/{{ dev_user }}/.kube/config"
+    owner: "{{ dev_user }}"
+    group: "{{ dev_user }}"
+    mode: '0600'
+    remote_src: yes
+
+- name: Update KUBECONFIG path in {{ dev_user }}'s environment (.bashrc)
+  ansible.builtin.lineinfile:
+    path: "/home/{{ dev_user }}/.bashrc"
+    line: "export KUBECONFIG=$HOME/.kube/config"
+    regexp: "^export KUBECONFIG=" # Ensures only one such line
+    create: yes
+    owner: "{{ dev_user }}"
+    group: "{{ dev_user }}"
+    mode: '0644'
+  notify: UserReloginNeeded
+
+- name: Reminder for user to re-login or source profile
+  ansible.builtin.debug:
+    msg: "User {{ dev_user }} may need to re-login or source their .bashrc for KUBECONFIG and other env vars to take effect."
+  run_once: true # Show only once per play
+  when: true # Always show this as a reminder after this task file
+  

@@ -1,0 +1,23 @@
+# .ansible-lint.yml
+skip_list:
+  - experimental
+  - yaml
+#  - fqcn-builtins
+warn_list:
+  - meta-*
+parseable: true
+verbosity: 1
+exclude_paths:
+  - .git
+  - .venv
+  - venv
+  - molecule
+  - .molecule
+  - __pycache__
+  - .tox
+  - .cache
+  - .github
+  - .vscode
+  - .idea
+  - roles/*/tests
+  

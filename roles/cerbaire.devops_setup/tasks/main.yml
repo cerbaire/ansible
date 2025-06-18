@@ -1,7 +1,7 @@
 ---
 # tasks file for roles/devops_setup
 - name: Install required packages
-  apt:
+  ansible.builtin.apt:
     name:
       - curl
       - git
@@ -14,20 +14,74 @@
 #  import_tasks: ctlptl.yml
 
 - name: Configure MOTD
-  import_tasks: motd.yml
+  ansible.builtin.import_tasks: motd.yml
+
+- name: Check if Terraform is installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/terraform
+  register: terraform_stat
+
+- name: Get installed Terraform version
+  ansible.builtin.command: /usr/local/bin/terraform version
+  register: terraform_version_installed
+  changed_when: false
+  failed_when: false
+  when: terraform_stat.stat.exists
+
+- name: Extract installed Terraform version string
+  ansible.builtin.set_fact:
+    terraform_version_installed_str: "{{ terraform_version_installed.stdout | regex_search('^(v[0-9.]+)*') }}"
+  when: terraform_version_installed.stdout is defined
+
+- name: Remove Terraform if wrong version is installed
+  ansible.builtin.file:
+    path: /usr/local/bin/terraform
+    state: absent
+  when:
+    - terraform_stat.stat.exists
+    - terraform_version_installed_str is defined
+    - terraform_version_installed_str != 'v' + devops_setup_terraform_version
+
+- name: Download and install Terraform {{ devops_setup_terraform_version }}
+  when: not terraform_stat.stat.exists or (terraform_version_installed_str is defined and terraform_version_installed_str != 'v' + devops_setup_terraform_version) or ansible_check_mode
+  block:
+    - name: Download Terraform archive
+      ansible.builtin.get_url:
+        url: "https://releases.hashicorp.com/terraform/{{ devops_setup_terraform_version }}/terraform_{{ devops_setup_terraform_version }}_linux_amd64.zip"
+        dest: "/tmp/terraform_{{ devops_setup_terraform_version }}_linux_amd64.zip"
+        mode: '0644'
+      register: terraform_archive_download
+    - name: Extract Terraform binary directly to /usr/local/bin
+      ansible.builtin.unarchive:
+        src: "{{ terraform_archive_download.dest }}"
+        dest: /usr/local/bin
+        remote_src: true
+      args:
+        creates: /usr/local/bin/terraform
+      when: terraform_archive_download is successful and terraform_archive_download.changed
+      register: terraform_extract_status
+    - name: Ensure Terraform binary is executable
+      ansible.builtin.file:
+        path: /usr/local/bin/terraform
+        mode: '0755'
+        owner: root
+        group: root
+      when: terraform_extract_status is successful and terraform_extract_status.changed
+    - name: Clean up Terraform download
+      ansible.builtin.file:
+        path: "{{ terraform_archive_download.dest }}"
+        state: absent
+      when: terraform_archive_download.dest is defined
+
+- name: Download Helm install script
+  ansible.builtin.get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/get-helm-3.sh
+    mode: '0755'
 
 - name: Install Helm
-  shell: |
-    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  ansible.builtin.shell: |
+    set -o pipefail
+    bash /tmp/get-helm-3.sh
   args:
     creates: /usr/local/bin/helm
-
-- name: Install Terraform
-  shell: |
-    curl -fsSL https://releases.hashicorp.com/terraform/1.8.4/terraform_1.8.4_linux_amd64.zip -o terraform.zip
-    unzip terraform.zip
-    mv terraform /usr/local/bin/
-    rm terraform.zip
-  args:
-    creates: /usr/local/bin/terraform
-...

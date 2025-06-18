@@ -3,8 +3,8 @@
 - name: Install git
   apt:
     name: git
-    state: latest
-    update_cache: yes
+    state: present
+    update_cache: true
 
 - name: Add an Apt signing key, will not download if present
   apt_key:
@@ -12,8 +12,8 @@
     url: https://packages.microsoft.com/keys/microsoft.asc
     state: present
 
-# Add specified repository into sources list using specified filename.
-- apt_repository:
+- name: Add VS Code repository
+  apt_repository:
     repo: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
     state: present
     filename: vscode
@@ -22,4 +22,3 @@
   apt:
     pkg:
       - code
-

@@ -12,7 +12,7 @@
   when: tilt_stat.stat.exists
 
 - name: Extract installed Tilt version string
-  set_fact:
+  ansible.builtin.set_fact:
     tilt_version_installed_str: "{{ tilt_version_installed.stdout | regex_search('^(v[0-9.]+)') }}"
   when: tilt_version_installed.stdout is defined
 

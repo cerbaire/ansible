@@ -6,11 +6,11 @@
       changed_when: False
 
   tasks:
-    - include: tasks/env.yml
-    - include: tasks/coding.yml
-    - include: tasks/music.yml
+    - ansible.builtin.import_tasks: tasks/env.yml
+    - ansible.builtin.import_tasks: tasks/coding.yml
+    - ansible.builtin.import_tasks: tasks/music.yml
     - name: Install packages
-      apt:
+      ansible.builtin.apt:
         pkg:
           - htop
           - mc

@@ -25,5 +25,5 @@
 - name: Include Tilt installation tasks
   ansible.builtin.include_tasks: 07_install_tilt.yml
 
-#- name: Include Tilt sample project setup tasks
-#  ansible.builtin.include_tasks: 08_setup_sample_tilt_project.yml
+# - name: Include Tilt sample project setup tasks
+#   ansible.builtin.include_tasks: 08_setup_sample_tilt_project.yml

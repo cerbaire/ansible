@@ -1,7 +1,7 @@
 # roles/k3s_dev_environment/handlers/main.yml
 - name: Reload systemd
   ansible.builtin.systemd_service: # Use systemd_service for daemon_reload
-    daemon_reload: yes
+    daemon_reload: true
   listen: Reload systemd and restart buildkitd
 
 - name: Restart buildkitd
@@ -18,4 +18,4 @@
 
 - name: UserReloginNeeded
   ansible.builtin.debug:
-    msg: "ACTION REQUIRED: User '{{ dev_user }}' needs to log out and log back in for all group memberships and environment variables to take full effect."
+    msg: "ACTION REQUIRED: User '{{ k3s_dev_environment_dev_user }}' needs to log out and log back in for all group memberships and environment variables to take full effect."

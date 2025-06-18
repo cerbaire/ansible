@@ -1,22 +1,22 @@
 # roles/k3s_dev_environment/tasks/04_install_buildkit.yml
 - name: Check if buildkitd is installed
   ansible.builtin.stat:
-    path: "{{ local_bin_path }}/buildkitd"
+    path: "{{ k3s_dev_environment_local_bin_path }}/buildkitd"
   register: buildkitd_stat
 
-- name: Create BuildKit group {{ buildkit_group }}
+- name: Create BuildKit group {{ k3s_dev_environment_buildkit_group }}
   ansible.builtin.group:
-    name: "{{ buildkit_group }}"
+    name: "{{ k3s_dev_environment_buildkit_group }}"
     system: true
     state: present
 
-- name: Create BuildKit user {{ buildkit_user }}
+- name: Create BuildKit user {{ k3s_dev_environment_buildkit_user }}
   ansible.builtin.user:
-    name: "{{ buildkit_user }}"
-    group: "{{ buildkit_group }}"
+    name: "{{ k3s_dev_environment_buildkit_user }}"
+    group: "{{ k3s_dev_environment_buildkit_group }}"
     system: true
     shell: /sbin/nologin
-    home: "{{ buildkit_data_dir }}"
+    home: "{{ k3s_dev_environment_buildkit_data_dir }}"
     create_home: true # Creates home dir if it doesn't exist
   when: not buildkitd_stat.stat.exists or ansible_check_mode # Only if not installed
 
@@ -42,10 +42,10 @@
         remote_src: true
       when: buildkit_archive_download is successful and buildkit_archive_download.changed
       register: buildkit_extract_status
-    - name: Move buildkitd and buildctl to {{ local_bin_path }}
+    - name: Move buildkitd and buildctl to {{ k3s_dev_environment_local_bin_path }}
       ansible.builtin.copy:
         src: "/tmp/buildkit-extract/bin/{{ item }}"
-        dest: "{{ local_bin_path }}/{{ item }}"
+        dest: "{{ k3s_dev_environment_local_bin_path }}/{{ item }}"
         mode: '0755'
         remote_src: true
       loop:
@@ -63,10 +63,10 @@
 
 - name: Ensure BuildKit data directory exists and has correct permissions
   ansible.builtin.file:
-    path: "{{ buildkit_data_dir }}"
+    path: "{{ k3s_dev_environment_buildkit_data_dir }}"
     state: directory
-    owner: "{{ buildkit_user }}"
-    group: "{{ buildkit_group }}"
+    owner: "{{ k3s_dev_environment_buildkit_user }}"
+    group: "{{ k3s_dev_environment_buildkit_group }}"
     mode: '0750'
 
 - name: Template BuildKit systemd service file
@@ -85,20 +85,20 @@
     state: started
     daemon_reload: true # Ensure this happens if unit file changed via notify
 
-- name: Add {{ dev_user }} to the {{ buildkit_group }} group for socket access
+- name: Add {{ k3s_dev_environment_dev_user }} to the {{ k3s_dev_environment_buildkit_group }} group for socket access
   ansible.builtin.user:
-    name: "{{ dev_user }}"
-    groups: "{{ buildkit_group }}"
+    name: "{{ k3s_dev_environment_dev_user }}"
+    groups: "{{ k3s_dev_environment_buildkit_group }}"
     append: true
   notify: UserReloginNeeded
 
-- name: Set BUILDKIT_HOST for {{ dev_user }} in .bashrc
+- name: Set BUILDKIT_HOST for {{ k3s_dev_environment_dev_user }} in .bashrc
   ansible.builtin.lineinfile:
-    path: "/home/{{ dev_user }}/.bashrc"
-    line: "export BUILDKIT_HOST={{ buildkit_socket_path }}"
+    path: "/home/{{ k3s_dev_environment_dev_user }}/.bashrc"
+    line: "export BUILDKIT_HOST={{ k3s_dev_environment_buildkit_socket_path }}"
     regexp: "^export BUILDKIT_HOST="
     create: true
-    owner: "{{ dev_user }}"
-    group: "{{ dev_user }}"
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
     mode: '0644'
   notify: UserReloginNeeded

@@ -1,16 +1,16 @@
 # roles/k3s_dev_environment/templates/k3s_registries.yaml.j2
 mirrors:
-  "{{ registry_host_address }}:{{ registry_node_port }}":
+  "{{ k3s_dev_environment_registry_host_address }}:{{ k3s_dev_environment_registry_node_port }}":
     endpoint:
-      - "http://{{ registry_host_address }}:{{ registry_node_port }}"
-  "{{ registry_service_name }}.{{ registry_namespace }}.svc.cluster.local:5000": # Internal K8s service access
+      - "http://{{ k3s_dev_environment_registry_host_address }}:{{ k3s_dev_environment_registry_node_port }}"
+  "{{ k3s_dev_environment_registry_service_name }}.{{ k3s_dev_environment_registry_namespace }}.svc.cluster.local:5000": # Internal K8s service access
     endpoint:
-      - "http://{{ registry_service_name }}.{{ registry_namespace }}.svc.cluster.local:5000"
+      - "http://{{ k3s_dev_environment_registry_service_name }}.{{ k3s_dev_environment_registry_namespace }}.svc.cluster.local:5000"
 
 configs:
-  "{{ registry_host_address }}:{{ registry_node_port }}":
+  "{{ k3s_dev_environment_registry_host_address }}:{{ k3s_dev_environment_registry_node_port }}":
     tls:
       insecure_skip_verify: true
-  "{{ registry_service_name }}.{{ registry_namespace }}.svc.cluster.local:5000":
+  "{{ k3s_dev_environment_registry_service_name }}.{{ k3s_dev_environment_registry_namespace }}.svc.cluster.local:5000":
     tls:
       insecure_skip_verify: true

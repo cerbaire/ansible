@@ -1,7 +1,7 @@
 # roles/k3s_dev_environment/tasks/01_install_tools.yml
 - name: Check if runc is installed
   ansible.builtin.stat:
-    path: "{{ local_bin_path }}/runc"
+    path: "{{ k3s_dev_environment_local_bin_path }}/runc"
   register: runc_stat
 
 - name: Download and install runc
@@ -12,17 +12,17 @@
     - name: Download runc binary (amd64)
       ansible.builtin.get_url:
         url: "https://github.com/opencontainers/runc/releases/download/{{ runc_version }}/runc.amd64"
-        dest: "{{ local_bin_path }}/runc" # Installs directly, ensure path is correct
+        dest: "{{ k3s_dev_environment_local_bin_path }}/runc" # Installs directly, ensure path is correct
         mode: '0755'
       register: runc_download
     - name: Ensure runc is executable (redundant if get_url mode is 0755, but good check)
       ansible.builtin.file:
-        path: "{{ local_bin_path }}/runc"
+        path: "{{ k3s_dev_environment_local_bin_path }}/runc"
         mode: '0755'
       when: runc_download.changed
 - name: Check if kubectl is installed
   ansible.builtin.stat:
-    path: "{{ local_bin_path }}/kubectl"
+    path: "{{ k3s_dev_environment_local_bin_path }}/kubectl"
   register: kubectl_stat
 
 - name: Download and install kubectl {{ kubectl_version }}
@@ -34,12 +34,12 @@
         dest: "/tmp/kubectl-{{ kubectl_version }}"
         mode: '0755'
       register: kubectl_download
-    - name: Move kubectl to {{ local_bin_path }}
+    - name: Move kubectl to {{ k3s_dev_environment_local_bin_path }}
       ansible.builtin.copy:
         src: "{{ kubectl_download.dest }}"
-        dest: "{{ local_bin_path }}/kubectl"
+        dest: "{{ k3s_dev_environment_local_bin_path }}/kubectl"
         mode: '0755'
-        remote_src: yes
+        remote_src: true
       when: kubectl_download is successful and kubectl_download.changed
     - name: Clean up kubectl download
       ansible.builtin.file:
@@ -49,7 +49,7 @@
 
 - name: Check if helm is installed
   ansible.builtin.stat:
-    path: "{{ local_bin_path }}/helm"
+    path: "{{ k3s_dev_environment_local_bin_path }}/helm"
   register: helm_stat
 
 - name: Download and install Helm {{ helm_version }}
@@ -71,18 +71,18 @@
       ansible.builtin.unarchive:
         src: "{{ helm_archive_download.dest }}"
         dest: "/tmp/helm-extract"
-        remote_src: yes
+        remote_src: true
         extra_opts: [--strip-components=1] # Specific to helm tarball structure
       args:
         creates: "/tmp/helm-extract/helm" # Idempotency check
       when: helm_archive_download is successful and helm_archive_download.changed
       register: helm_extract_status
-    - name: Move helm binary to {{ local_bin_path }}
+    - name: Move helm binary to {{ k3s_dev_environment_local_bin_path }}
       ansible.builtin.copy:
         src: "/tmp/helm-extract/helm"
-        dest: "{{ local_bin_path }}/helm"
+        dest: "{{ k3s_dev_environment_local_bin_path }}/helm"
         mode: '0755'
-        remote_src: yes
+        remote_src: true
       when: helm_extract_status is successful and helm_extract_status.changed
     - name: Clean up Helm downloads and extraction
       ansible.builtin.file:
@@ -92,4 +92,3 @@
         - "{{ helm_archive_download.dest }}"
         - "/tmp/helm-extract"
       when: item is defined and item != ""
-      

@@ -7,14 +7,14 @@ After=network-online.target
 [Service]
 Type=simple
 # Rootless configuration is more complex than expected. Stick to root for now.
-# User={{ buildkit_user }}
-# Group={{ buildkit_group }}
-ExecStart={{ local_bin_path }}/buildkitd \
+# User={{ k3s_dev_environment_buildkit_user }}
+# Group={{ k3s_dev_environment_buildkit_group }}
+ExecStart={{ k3s_dev_environment_local_bin_path }}/buildkitd \
     --debug \
-    --addr {{ buildkit_socket_path }} \
-    --addr {{ buildkit_tcp_addr }} \
-    --root {{ buildkit_data_dir }} \
-    --group {{ buildkit_group }}
+    --addr {{ k3s_dev_environment_buildkit_socket_path }} \
+    --addr {{ k3s_dev_environment_buildkit_tcp_addr }} \
+    --root {{ k3s_dev_environment_buildkit_data_dir }} \
+    --group {{ k3s_dev_environment_buildkit_group }}
 # Rootless configuration is more complex than expected. Stick to root for now.
 #    --oci-worker-no-process-sandbox # Often needed when buildkitd runs as non-root for some operations
 Restart=always

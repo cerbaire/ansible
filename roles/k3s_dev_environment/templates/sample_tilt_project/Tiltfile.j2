@@ -1,7 +1,7 @@
 # roles/k3s_dev_environment/templates/sample_tilt_project/Tiltfile.j2
 allow_k8s_contexts('default')
 
-REGISTRY_ADDR = '{{ registry_host_address }}:{{ registry_node_port }}'
+REGISTRY_ADDR = '{{ k3s_dev_environment_registry_host_address }}:{{ k3s_dev_environment_registry_node_port }}'
 # This IMAGE_NAME must match the 'image:' field placeholder in your k8s-app.yaml
 IMAGE_NAME = '{{ tilt_sample_image_name }}'
 
@@ -35,5 +35,5 @@ k8s_resource(
 
 print("Tiltfile loaded for image: " + IMAGE_NAME)
 print("Pushing images to registry: " + REGISTRY_ADDR)
-print("Using BuildKit host: {{ buildkit_socket_path }}")
+print("Using BuildKit host: {{ k3s_dev_environment_buildkit_socket_path }}")
 print("Access the sample app via port-forward 8080 (Tilt UI) or its LoadBalancer IP (if available).")

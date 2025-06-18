@@ -6,7 +6,7 @@
       apiVersion: v1
       kind: Namespace
       metadata:
-        name: "{{ registry_namespace }}"
+        name: "{{ k3s_dev_environment_registry_namespace }}"
     kubeconfig: "{{ kubeconfig_path }}"
 
 - name: Deploy local Docker registry using static YAML manifest
@@ -20,8 +20,8 @@
   kubernetes.core.k8s_info:
     api_version: apps/v1
     kind: Deployment
-    name: "{{ registry_deployment_name }}"
-    namespace: "{{ registry_namespace }}"
+    name: "{{ k3s_dev_environment_registry_deployment_name }}"
+    namespace: "{{ k3s_dev_environment_registry_namespace }}"
     kubeconfig: "{{ kubeconfig_path }}"
   register: registry_deploy_info
   until: >
@@ -34,4 +34,3 @@
   retries: 30
   delay: 10
   when: registry_apply_status.changed # Only wait if we applied/changed something
-  

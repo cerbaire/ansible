@@ -7,22 +7,22 @@
 
 - name: Define target sample application directory
   ansible.builtin.set_fact:
-    actual_tilt_sample_app_dir: "{{ tilt_sample_app_dir_base }}/{{ dev_user }}/{{ tilt_sample_app_name }}"
+    actual_tilt_sample_app_dir: "{{ tilt_sample_app_dir_base }}/{{ k3s_dev_environment_dev_user }}/{{ tilt_sample_app_name }}"
 
-- name: Create Tilt sample project directory {{ actual_tilt_sample_app_dir }} for {{ dev_user }}
+- name: Create Tilt sample project directory {{ actual_tilt_sample_app_dir }} for {{ k3s_dev_environment_dev_user }}
   ansible.builtin.file:
     path: "{{ actual_tilt_sample_app_dir }}"
     state: directory
-    owner: "{{ dev_user }}"
-    group: "{{ dev_user }}"
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
     mode: '0755'
 
 - name: Copy files for {{ default_sample_lang }} sample project
   ansible.builtin.copy:
     src: "{{ role_path }}/files/{{ effective_sample_project_src_path }}/{{ item }}"
     dest: "{{ actual_tilt_sample_app_dir }}/{{ item }}"
-    owner: "{{ dev_user }}"
-    group: "{{ dev_user }}"
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
     mode: '0644'
   loop: # List all common files expected in each sample dir
     - Dockerfile
@@ -34,14 +34,14 @@
   #   ansible.builtin.copy:
   #     src: "{{ role_path }}/files/{{ effective_sample_project_src_path }}/" # Note the trailing slash
   #     dest: "{{ actual_tilt_sample_app_dir }}/"
-  #     owner: "{{ dev_user }}"
-  #     group: "{{ dev_user }}"
+  #     owner: "{{ k3s_dev_environment_dev_user }}"
+  #     group: "{{ k3s_dev_environment_dev_user }}"
   #     mode: preserve # Preserves modes from source, adjust as needed
 
 - name: List files in source sample directory for debugging
   ansible.builtin.find:
     paths: "{{ role_path }}/files/{{ effective_sample_project_src_path }}/"
-    recurse: yes
+    recurse: true
   register: sample_src_files
   when: ansible_verbosity > 1 # Show only when verbose
 
@@ -49,8 +49,8 @@
   ansible.builtin.copy:
     src: "{{ item.path }}" # item.path from find result
     dest: "{{ actual_tilt_sample_app_dir }}/{{ item.path | regex_replace('^' + role_path + '/files/' + effective_sample_project_src_path + '/', '') }}"
-    owner: "{{ dev_user }}"
-    group: "{{ dev_user }}"
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
     mode: '0644' # Or item.mode if preserving
   loop: "{{ sample_src_files.files }}"
   when: sample_src_files.files is defined
@@ -59,17 +59,17 @@
   ansible.builtin.template:
     src: "sample_tilt_project/Tiltfile.j2" # Using the common Tiltfile template
     dest: "{{ actual_tilt_sample_app_dir }}/Tiltfile"
-    owner: "{{ dev_user }}"
-    group: "{{ dev_user }}"
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
     mode: '0644'
   vars:
     # These vars are used by Tiltfile.j2
-    registry_host_address: "{{ registry_host_address }}"
-    registry_node_port: "{{ registry_node_port }}"
+    k3s_dev_environment_registry_host_address: "{{ k3s_dev_environment_registry_host_address }}"
+    k3s_dev_environment_registry_node_port: "{{ k3s_dev_environment_registry_node_port }}"
     tilt_sample_image_name: "{{ tilt_sample_image_name }}" # e.g., 'tilt-sample-app-image'
-    buildkit_socket_path: "{{ buildkit_socket_path }}"
+    k3s_dev_environment_buildkit_socket_path: "{{ k3s_dev_environment_buildkit_socket_path }}"
 
 - name: Inform user about the sample project
   ansible.builtin.debug:
-    msg: "Tilt sample project ({{ default_sample_lang }}) created at {{ actual_tilt_sample_app_dir }}. cd into it and run 'tilt up' as user '{{ dev_user }}' (after relogin)."
+    msg: "Tilt sample project ({{ default_sample_lang }}) created at {{ actual_tilt_sample_app_dir }}. cd into it and run 'tilt up' as user '{{ k3s_dev_environment_dev_user }}' (after relogin)."
   run_once: true

@@ -1,31 +1,51 @@
 # roles/k3s_dev_environment/tasks/07_install_tilt.yml
 - name: Check if Tilt is installed
   ansible.builtin.stat:
-    path: "{{ local_bin_path }}/tilt"
+    path: "{{ k3s_dev_environment_local_bin_path }}/tilt"
   register: tilt_stat
 
-- name: Download and install Tilt {{ tilt_version }}
-  when: not tilt_stat.stat.exists or ansible_check_mode
+- name: Get installed Tilt version
+  ansible.builtin.command: "{{ k3s_dev_environment_local_bin_path }}/tilt version"
+  register: tilt_version_installed
+  changed_when: false
+  failed_when: false
+  when: tilt_stat.stat.exists
+
+- name: Extract installed Tilt version string
+  set_fact:
+    tilt_version_installed_str: "{{ tilt_version_installed.stdout | regex_search('^(v[0-9.]+)') }}"
+  when: tilt_version_installed.stdout is defined
+
+- name: Remove Tilt if wrong version is installed
+  ansible.builtin.file:
+    path: "{{ k3s_dev_environment_local_bin_path }}/tilt"
+    state: absent
+  when:
+    - tilt_stat.stat.exists
+    - tilt_version_installed_str is defined
+    - tilt_version_installed_str != 'v' + k3s_dev_environment_tilt_version
+
+- name: Download and install Tilt {{ k3s_dev_environment_tilt_version }}
+  when: not tilt_stat.stat.exists or (tilt_version_installed_str is defined and tilt_version_installed_str != 'v' + k3s_dev_environment_tilt_version) or ansible_check_mode
   block:
     - name: Download Tilt archive
       ansible.builtin.get_url:
-        url: "https://github.com/tilt-dev/tilt/releases/download/v{{ tilt_version }}/tilt.{{ tilt_version }}.linux.x86_64.tar.gz"
-        dest: "/tmp/tilt.{{ tilt_version }}.linux.x86_64.tar.gz"
+        url: "https://github.com/tilt-dev/tilt/releases/download/v{{ k3s_dev_environment_tilt_version }}/tilt.{{ k3s_dev_environment_tilt_version }}.linux.x86_64.tar.gz"
+        dest: "/tmp/tilt.{{ k3s_dev_environment_tilt_version }}.linux.x86_64.tar.gz"
         mode: '0644'
       register: tilt_archive_download
-    - name: Extract Tilt binary directly to {{ local_bin_path }}
+    - name: Extract Tilt binary directly to {{ k3s_dev_environment_local_bin_path }}
       ansible.builtin.unarchive:
         src: "{{ tilt_archive_download.dest }}"
-        dest: "{{ local_bin_path }}" # Extracts 'tilt' binary into this dir
-        remote_src: yes
-        # extra_opts: [--no-same-owner] # May not be needed if dest owned by root
+        dest: "{{ k3s_dev_environment_local_bin_path }}" # Extracts 'tilt' binary into this dir
+        remote_src: true
       args:
-        creates: "{{ local_bin_path }}/tilt" # Idempotency: only if tilt isn't there
+        creates: "{{ k3s_dev_environment_local_bin_path }}/tilt" # Idempotency: only if tilt isn't there
       when: tilt_archive_download is successful and tilt_archive_download.changed
       register: tilt_extract_status
     - name: Ensure Tilt binary is executable
       ansible.builtin.file:
-        path: "{{ local_bin_path }}/tilt"
+        path: "{{ k3s_dev_environment_local_bin_path }}/tilt"
         mode: '0755'
         owner: root # Ensure root owns it
         group: root

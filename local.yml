@@ -10,7 +10,7 @@
   tasks:
     - name: Lookup group for current hostname
       ansible.builtin.set_fact:
-        current_group: "{{ lookup('dict', group_map)[ansible_hostname] | default('unknown') }}"
+        current_group: "{{ group_map[ansible_hostname] | default('unknown') }}"
 
     - name: Fail if hostname is not mapped
       ansible.builtin.fail:

@@ -1,0 +1,40 @@
+  # Installing Java
+- name: Install linuxuprising repository
+  ansible.builtin.apt_repository:
+    repo: ppa:linuxuprising/java
+    state: present
+  become: true
+
+# https://stackoverflow.com/questions/19275856/auto-yes-to-the-license-agreement-on-sudo-apt-get-y-install-oracle-java7-instal
+#- name: accept oracle license
+#  debconf:
+#    name: "oracle-java11-installer-local"
+#    question: "oracle-license-v1-2"
+#    value: "true"
+#    vtype: "select"
+
+- name: Automatically select the Oracle License
+  ansible.builtin.shell:
+    cmd: echo debconf shared/accepted-oracle-license-v1-2 select true | sudo debconf-set-selections
+  
+- name: Install OpenJDK 21
+  ansible.builtin.apt:
+    name: openjdk-21-jdk
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Set Java 21 as default JVM
+  community.general.alternatives:
+    name: java
+    path: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+    priority: 2111
+  become: true
+
+- name: Set Javac 21 as default
+  community.general.alternatives:
+    name: javac
+    path: /usr/lib/jvm/java-21-openjdk-amd64/bin/javac
+    priority: 2111
+  become: true
+...

@@ -1,0 +1,27 @@
+---
+- name: Setup DevOps & k3s development environment
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  become: true
+
+  pre_tasks:
+    - name: Ensure apt cache is up to date
+      ansible.builtin.apt:
+        update_cache: true
+      when: ansible_os_family == "Debian"
+      
+    - name: Ensure python3-pip is present
+      ansible.builtin.apt:
+        name: python3-pip
+        state: present
+
+    - name: Ensure Kubernetes Python library is installed
+      ansible.builtin.pip:
+        name: kubernetes
+        state: present
+        executable: pip3
+  roles:
+    - cerbaire.devops_setup
+    - k3s_dev_environment
+...

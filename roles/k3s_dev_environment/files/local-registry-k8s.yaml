@@ -1,0 +1,67 @@
+# roles/k3s_dev_environment/files/local-registry-k8s.yaml
+# Static names here should align with vars in vars/main.yml if those vars are used elsewhere
+# to refer to these resources (e.g., in k3s_registries.yaml.j2).
+# k3s_dev_environment_registry_namespace: "local-registry"
+# k3s_dev_environment_registry_deployment_name: "local-docker-registry"
+# k3s_dev_environment_registry_service_name: "local-registry-service"
+# k3s_dev_environment_registry_node_port: 30500
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: local-registry # Corresponds to 'k3s_dev_environment_registry_namespace' var
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-docker-registry # Corresponds to 'k3s_dev_environment_registry_deployment_name' var
+  namespace: local-registry
+  labels:
+    app: local-docker-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: local-docker-registry
+  template:
+    metadata:
+      labels:
+        app: local-docker-registry
+    spec:
+      containers:
+        - name: registry
+          image: registry:2 # Corresponds to 'k3s_dev_environment_registry_image' var (implicitly)
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: registry-storage
+              mountPath: /var/lib/registry
+      volumes:
+        - name: registry-storage
+          hostPath:
+            path: /mnt/wsl/k3s-registry
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-registry-service # Corresponds to 'k3s_dev_environment_registry_service_name' var
+  namespace: local-registry
+spec:
+  selector:
+    app: local-docker-registry
+  ports:
+  - name: registry-http
+    protocol: TCP
+    port: 5000      # Internal K8s service port
+    targetPort: 5000  # Container port
+    nodePort: 30500 # Corresponds to 'k3s_dev_environment_registry_node_port' var. Host port for external access.
+  type: NodePort
+...

@@ -1,0 +1,6 @@
+---
+# vars file for roles/devops_setup
+motd_centos: "Welcome to CentOS Linux - Provided by Rocky with Ansible\n"
+motd_ubuntu: "Welcome to Ubuntu Linux - Provided by Rocky with Ansible\n"
+devops_setup_terraform_version: "1.12.2"
+...

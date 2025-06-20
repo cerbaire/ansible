@@ -1,0 +1,62 @@
+---
+# tasks file for roles/cerbaire.minimserver
+- name: Ensure Java is available (imported from cerbaire.language)
+  ansible.builtin.import_role:
+    name: cerbaire.language
+    tasks_from: java
+
+- name: Ensure MinimServer install directory exists
+  ansible.builtin.file:
+    path: "{{ minimserver_install_dir }}"
+    state: directory
+    mode: '0755'
+  become: false
+
+- name: Download MinimServer
+  ansible.builtin.get_url:
+    url: https://minimworld.com/files/b24da93f4f5f356ec424499a6bf8abc2/MinimServer-2.2-linux-intel.tar.gz
+    dest: "{{ ansible_env.HOME }}/minimserver/minimserver.tar.gz"
+    mode: '0644'
+  become: false
+
+- name: Extract MinimServer
+  ansible.builtin.unarchive:
+    src: "{{ ansible_env.HOME }}/minimserver/minimserver.tar.gz"
+    dest: "{{ ansible_env.HOME }}"
+    remote_src: yes
+  become: false
+
+- name: Run MinimServer setup script (headless)
+  ansible.builtin.shell: yes | ./minimserver/bin/setup
+  args:
+    chdir: "{{ ansible_env.HOME }}"
+    executable: /bin/bash
+  environment:
+    JAVA_HOME: "/usr/lib/jvm/java-21-openjdk-amd64"
+    PATH: "/usr/lib/jvm/java-21-openjdk-amd64/bin:{{ ansible_env.PATH }}"
+  become: false
+
+# - name: Start MinimServer in console mode
+#   shell: ./startc
+#   args:
+#     chdir: "{{ ansible_env.HOME }}/minimserver/minimserver/bin"
+#     executable: /bin/bash
+#   become: false
+
+- name: Install systemd service for MinimServer
+  ansible.builtin.template:
+    src: minimserver.service.j2
+    dest: "/etc/systemd/system/minimserver.service"
+    mode: '0644'
+  when: minimserver_autostart
+  become: true
+
+- name: Enable and start MinimServer via systemd
+  ansible.builtin.systemd:
+    name: minimserver
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: minimserver_autostart
+  become: true
+...

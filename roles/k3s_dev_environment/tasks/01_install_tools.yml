@@ -1,0 +1,49 @@
+# roles/k3s_dev_environment/tasks/01_install_tools.yml
+- name: Check if runc is installed
+  ansible.builtin.stat:
+    path: "{{ k3s_dev_environment_local_bin_path }}/runc"
+  register: runc_stat
+
+- name: Download and install runc
+  vars:
+    runc_version: "v1.1.13" # Check for the latest stable runc release on GitHub
+  when: not runc_stat.stat.exists or ansible_check_mode
+  block:
+    - name: Download runc binary (amd64)
+      ansible.builtin.get_url:
+        url: "https://github.com/opencontainers/runc/releases/download/{{ runc_version }}/runc.amd64"
+        dest: "{{ k3s_dev_environment_local_bin_path }}/runc" # Installs directly, ensure path is correct
+        mode: '0755'
+      register: runc_download
+    - name: Ensure runc is executable (redundant if get_url mode is 0755, but good check)
+      ansible.builtin.file:
+        path: "{{ k3s_dev_environment_local_bin_path }}/runc"
+        mode: '0755'
+      when: runc_download.changed
+- name: Check if kubectl is installed
+  ansible.builtin.stat:
+    path: "{{ k3s_dev_environment_local_bin_path }}/kubectl"
+  register: kubectl_stat
+
+- name: Download and install kubectl {{ kubectl_version }}
+  when: not kubectl_stat.stat.exists or ansible_check_mode # Always try in check mode
+  block:
+    - name: Download kubectl binary
+      ansible.builtin.get_url:
+        url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
+        dest: "/tmp/kubectl-{{ kubectl_version }}"
+        mode: '0755'
+      register: kubectl_download
+    - name: Move kubectl to {{ k3s_dev_environment_local_bin_path }}
+      ansible.builtin.copy:
+        src: "{{ kubectl_download.dest }}"
+        dest: "{{ k3s_dev_environment_local_bin_path }}/kubectl"
+        mode: '0755'
+        remote_src: true
+      when: kubectl_download is successful and kubectl_download.changed
+    - name: Clean up kubectl download
+      ansible.builtin.file:
+        path: "{{ kubectl_download.dest }}"
+        state: absent
+      when: kubectl_download.dest is defined
+...

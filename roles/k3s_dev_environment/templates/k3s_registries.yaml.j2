@@ -1,0 +1,16 @@
+# roles/k3s_dev_environment/templates/k3s_registries.yaml.j2
+mirrors:
+  "{{ k3s_dev_environment_registry_host_address }}:{{ k3s_dev_environment_registry_node_port }}":
+    endpoint:
+      - "http://{{ k3s_dev_environment_registry_host_address }}:{{ k3s_dev_environment_registry_node_port }}"
+  "{{ k3s_dev_environment_registry_service_name }}.{{ k3s_dev_environment_registry_namespace }}.svc.cluster.local:5000": # Internal K8s service access
+    endpoint:
+      - "http://{{ k3s_dev_environment_registry_service_name }}.{{ k3s_dev_environment_registry_namespace }}.svc.cluster.local:5000"
+
+configs:
+  "{{ k3s_dev_environment_registry_host_address }}:{{ k3s_dev_environment_registry_node_port }}":
+    tls:
+      insecure_skip_verify: true
+  "{{ k3s_dev_environment_registry_service_name }}.{{ k3s_dev_environment_registry_namespace }}.svc.cluster.local:5000":
+    tls:
+      insecure_skip_verify: true

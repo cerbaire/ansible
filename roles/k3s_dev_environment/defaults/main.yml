@@ -1,0 +1,2 @@
+# roles/k3s_dev_environment/defaults/main.yml
+# No defaults needed here as vars/main.yml is comprehensive and meant for user modification.

@@ -1,0 +1,39 @@
+# roles/k3s_dev_environment/templates/sample_tilt_project/Tiltfile.j2
+allow_k8s_contexts('default')
+
+REGISTRY_ADDR = '{{ k3s_dev_environment_registry_host_address }}:{{ k3s_dev_environment_registry_node_port }}'
+# This IMAGE_NAME must match the 'image:' field placeholder in your k8s-app.yaml
+IMAGE_NAME = '{{ tilt_sample_image_name }}'
+
+default_registry(REGISTRY_ADDR)
+
+# Define how to build the image.
+# Dockerfile is expected in the current directory ('.') where this Tiltfile resides.
+custom_build(
+    ref=IMAGE_NAME,
+    command=['./build_and_push.sh'],
+    deps=[
+        './Dockerfile',
+        './build_and_push.sh'
+        # Add files from your project that are needed to build the image.
+    ],
+    skips_local_docker=True
+)
+
+# k8s_yaml will find 'k8s-app.yaml' in the current directory.
+# Tilt automatically replaces occurrences of IMAGE_NAME (e.g., 'tilt-sample-app-image')
+# in the Kubernetes manifests with the fully qualified, tagged image name,
+# like 'localhost:30500/tilt-sample-app-image:tilt-build-hash'.
+k8s_yaml('k8s-app.yaml')
+
+# k8s_resource targets the deployment by its name as defined in k8s-app.yaml
+# This allows for features like port-forwarding.
+k8s_resource(
+    IMAGE_NAME,
+    port_forwards=["8080:8080"]
+)
+
+print("Tiltfile loaded for image: " + IMAGE_NAME)
+print("Pushing images to registry: " + REGISTRY_ADDR)
+print("Using BuildKit host: {{ k3s_dev_environment_buildkit_socket_path }}")
+print("Access the sample app via port-forward 8080 (Tilt UI) or its LoadBalancer IP (if available).")

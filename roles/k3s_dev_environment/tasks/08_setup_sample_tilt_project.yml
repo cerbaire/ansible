@@ -1,0 +1,75 @@
+# roles/k3s_dev_environment/tasks/08_setup_sample_tilt_project.yml
+- name: Set sample project source path based on default_sample_lang
+  ansible.builtin.set_fact:
+    sample_project_src_path: "sample_tilt_project_{{ default_sample_lang | lower }}"
+    # For 'go', the sample path is just 'sample_tilt_project'
+    effective_sample_project_src_path: "{{ 'sample_tilt_project' if default_sample_lang | lower == 'go' else 'sample_tilt_project_' + (default_sample_lang | lower) }}"
+
+- name: Define target sample application directory
+  ansible.builtin.set_fact:
+    actual_tilt_sample_app_dir: "{{ tilt_sample_app_dir_base }}/{{ k3s_dev_environment_dev_user }}/{{ tilt_sample_app_name }}"
+
+- name: Create Tilt sample project directory {{ actual_tilt_sample_app_dir }} for {{ k3s_dev_environment_dev_user }}
+  ansible.builtin.file:
+    path: "{{ actual_tilt_sample_app_dir }}"
+    state: directory
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
+    mode: '0755'
+
+- name: Copy files for {{ default_sample_lang }} sample project
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/{{ effective_sample_project_src_path }}/{{ item }}"
+    dest: "{{ actual_tilt_sample_app_dir }}/{{ item }}"
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
+    mode: '0644'
+  loop: # List all common files expected in each sample dir
+    - Dockerfile
+    - k8s-app.yaml
+  # Add specific files per language or use a recursive copy for the whole dir if structure is consistent
+  # For simplicity, explicit copy is safer.
+  # Example: Recursive copy if needed
+  # - name: Copy all files for {{ default_sample_lang }} sample project
+  #   ansible.builtin.copy:
+  #     src: "{{ role_path }}/files/{{ effective_sample_project_src_path }}/" # Note the trailing slash
+  #     dest: "{{ actual_tilt_sample_app_dir }}/"
+  #     owner: "{{ k3s_dev_environment_dev_user }}"
+  #     group: "{{ k3s_dev_environment_dev_user }}"
+  #     mode: preserve # Preserves modes from source, adjust as needed
+
+- name: List files in source sample directory for debugging
+  ansible.builtin.find:
+    paths: "{{ role_path }}/files/{{ effective_sample_project_src_path }}/"
+    recurse: true
+  register: sample_src_files
+  when: ansible_verbosity > 1 # Show only when verbose
+
+- name: Copy specific source files for {{ default_sample_lang }}
+  ansible.builtin.copy:
+    src: "{{ item.path }}" # item.path from find result
+    dest: "{{ actual_tilt_sample_app_dir }}/{{ item.path | regex_replace('^' + role_path + '/files/' + effective_sample_project_src_path + '/', '') }}"
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
+    mode: '0644' # Or item.mode if preserving
+  loop: "{{ sample_src_files.files }}"
+  when: sample_src_files.files is defined
+
+- name: Template Tiltfile into project directory
+  ansible.builtin.template:
+    src: "sample_tilt_project/Tiltfile.j2" # Using the common Tiltfile template
+    dest: "{{ actual_tilt_sample_app_dir }}/Tiltfile"
+    owner: "{{ k3s_dev_environment_dev_user }}"
+    group: "{{ k3s_dev_environment_dev_user }}"
+    mode: '0644'
+  vars:
+    # These vars are used by Tiltfile.j2
+    k3s_dev_environment_registry_host_address: "{{ k3s_dev_environment_registry_host_address }}"
+    k3s_dev_environment_registry_node_port: "{{ k3s_dev_environment_registry_node_port }}"
+    tilt_sample_image_name: "{{ tilt_sample_image_name }}" # e.g., 'tilt-sample-app-image'
+    k3s_dev_environment_buildkit_socket_path: "{{ k3s_dev_environment_buildkit_socket_path }}"
+
+- name: Inform user about the sample project
+  ansible.builtin.debug:
+    msg: "Tilt sample project ({{ default_sample_lang }}) created at {{ actual_tilt_sample_app_dir }}. cd into it and run 'tilt up' as user '{{ k3s_dev_environment_dev_user }}' (after relogin)."
+  run_once: true

@@ -1,0 +1,17 @@
+# roles/k3s_dev_environment/tasks/00_prepare_system.yml
+- name: Ensure k3s_dev_environment_dev_user exists ({{ k3s_dev_environment_dev_user }})
+  ansible.builtin.user:
+    name: "{{ k3s_dev_environment_dev_user }}"
+    state: present
+    shell: /bin/bash # Example shell
+  failed_when: user_result is failed and ('permission denied' not in user_result.msg | lower)
+  register: user_result
+
+- name: Install prerequisite packages (curl, git, etc.)
+  ansible.builtin.package:
+    name:
+      - curl
+      - git
+      - ca-certificates
+      - gnupg # For Helm GPG keys if its install script uses them
+    state: present

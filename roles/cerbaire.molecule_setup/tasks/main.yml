@@ -1,0 +1,30 @@
+---
+# tasks file for roles/molecule_setup
+
+- name: Add ~/.local/bin to PATH in .bashrc if not already present
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: 'export PATH="$HOME/.local/bin:$PATH"'
+    insertafter: EOF
+    state: present
+
+- name: Ensure ~/.local/bin exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.local/bin"
+    state: directory
+
+- name: Install Molecule with Docker support and ansible-lint (user scope)
+  ansible.builtin.pip:
+    name:
+      - molecule
+      - molecule-docker
+      - ansible-lint
+    extra_args: >
+      --user
+#      --trusted-host pypi.org
+#      --trusted-host files.pythonhosted.org
+    executable: pip3
+  environment:
+    SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+  become: false
+...

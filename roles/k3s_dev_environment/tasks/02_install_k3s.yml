@@ -1,0 +1,40 @@
+# roles/k3s_dev_environment/tasks/02_install_k3s.yml
+- name: Check if K3s is already installed (via k3s binary)
+  ansible.builtin.stat:
+    path: "{{ k3s_dev_environment_local_bin_path }}/k3s"
+  register: k3s_binary_stat
+
+- name: Check if K3s kubeconfig exists
+  ansible.builtin.stat:
+    path: "/etc/rancher/k3s/k3s.yaml"
+  register: k3s_kubeconfig_stat
+
+- name: Download K3s installation script
+  when: (not k3s_binary_stat.stat.exists or not k3s_kubeconfig_stat.stat.exists) or ansible_check_mode
+  ansible.builtin.get_url:
+    url: "https://get.k3s.io"
+    dest: "/tmp/k3s-install.sh"
+    mode: '0755'
+  register: k3s_script_download
+
+- name: Install K3s {{ k3s_dev_environment_k3s_version }}
+  when: (not k3s_binary_stat.stat.exists or not k3s_kubeconfig_stat.stat.exists)
+  ansible.builtin.command: # Using command to handle environment variables for script
+    cmd: "/tmp/k3s-install.sh"
+  environment:
+    INSTALL_K3S_EXEC: "{{ k3s_install_args | default('') }}"
+    INSTALL_K3S_VERSION: "{{ k3s_dev_environment_k3s_version | default('v1.30.1+k3s1') }}"
+  register: k3s_install_run
+
+- name: Ensure K3s service is enabled and started
+  ansible.builtin.systemd_service:
+    name: k3s
+    enabled: true
+    state: started
+
+- name: Wait for K3s kubeconfig to be available
+  ansible.builtin.wait_for:
+    path: "/etc/rancher/k3s/k3s.yaml"
+    timeout: 120 # Increased timeout for slower systems/VMs
+    delay: 10
+...

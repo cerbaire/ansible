@@ -1,0 +1,77 @@
+---
+# tasks file for roles/helm
+# - name: Download Helm install script
+#   ansible.builtin.get_url:
+#     url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+#     dest: /tmp/get-helm-3.sh
+#     mode: '0755'
+
+# - name: Install Helm
+#   ansible.builtin.shell: |
+#     set -o pipefail
+#     bash /tmp/get-helm-3.sh
+#   args:
+#     creates: /usr/local/bin/helm
+
+
+# Moved from k3s_dev_environment role
+- name: Check if helm is installed
+  ansible.builtin.stat:
+    path: "{{ helm_install_path }}/helm"
+  register: helm_stat
+
+- name: Download and install Helm {{ helm_version }}
+  when: not helm_stat.stat.exists or ansible_check_mode
+  block:
+    - name: Download Helm archive
+      ansible.builtin.get_url:
+        url: "https://get.helm.sh/helm-{{ helm_version }}-linux-amd64.tar.gz"
+        dest: "/tmp/helm-{{ helm_version }}-linux-amd64.tar.gz"
+        mode: '0644'
+      register: helm_archive_download
+    - name: Create temporary directory for Helm extraction
+      ansible.builtin.file:
+        path: "/tmp/helm-extract"
+        state: directory
+        mode: '0755'
+      when: helm_archive_download is successful and helm_archive_download.changed
+    - name: Extract Helm archive
+      ansible.builtin.unarchive:
+        src: "{{ helm_archive_download.dest }}"
+        dest: "/tmp/helm-extract"
+        remote_src: true
+        extra_opts: [--strip-components=1] # Specific to helm tarball structure
+      args:
+        creates: "/tmp/helm-extract/helm" # Idempotency check
+      when: helm_archive_download is successful and helm_archive_download.changed
+      register: helm_extract_status
+    - name: Move helm binary to {{ helm_install_path }}
+      ansible.builtin.copy:
+        src: "/tmp/helm-extract/helm"
+        dest: "{{ helm_install_path }}/helm"
+        mode: '0755'
+        remote_src: true
+      when: helm_extract_status is successful and helm_extract_status.changed
+    - name: Clean up Helm downloads and extraction
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ helm_archive_download.dest }}"
+        - "/tmp/helm-extract"
+      when: item is defined and item != ""
+
+# Simple version to install Helm
+# Check https://stackoverflow.com/questions/75343804/better-way-to-install-helm-with-ansible for better way to do
+# - name: Install helm if not exists
+#   unarchive:
+#     src: https://get.helm.sh/helm-v3.18.3-linux-amd64.tar.gz
+#     dest: /usr/local/bin
+#     extra_opts: "--strip-components=1"
+#     owner: root
+#     group: root
+#     mode: 0755
+#     remote_src: true
+#   args:
+#     creates: /usr/local/bin/helm
+...

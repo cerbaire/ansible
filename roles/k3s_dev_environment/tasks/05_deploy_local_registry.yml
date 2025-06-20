@@ -1,0 +1,37 @@
+# roles/k3s_dev_environment/tasks/05_deploy_local_registry.yml
+- name: Ensure local registry namespace exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ k3s_dev_environment_registry_namespace }}"
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
+
+- name: Deploy local Docker registry using static YAML manifest
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ role_path }}/files/local-registry-k8s.yaml"
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
+  register: registry_apply_status
+
+- name: Wait for local registry deployment to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: "{{ k3s_dev_environment_registry_deployment_name }}"
+    namespace: "{{ k3s_dev_environment_registry_namespace }}"
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
+  register: registry_deploy_info
+  until: >
+    registry_deploy_info.resources is defined and
+    registry_deploy_info.resources | length > 0 and
+    registry_deploy_info.resources[0].status is defined and
+    registry_deploy_info.resources[0].status.readyReplicas is defined and
+    registry_deploy_info.resources[0].status.readyReplicas | int >= 1 and
+    registry_deploy_info.resources[0].status.readyReplicas == registry_deploy_info.resources[0].spec.replicas
+  retries: 30
+  delay: 10
+  when: registry_apply_status.changed # Only wait if we applied/changed something
+...

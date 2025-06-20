@@ -1,0 +1,13 @@
+[Unit]
+Description=MinimServer Media Server
+After=network.target
+
+[Service]
+User={{ ansible_user }}
+ExecStart={{ minimserver_install_dir }}/minimserver/bin/startc
+ExecStop={{ minimserver_install_dir }}/minimserver/bin/stopc
+Environment="JAVA_HOME={{ minimserver_java_home }}"
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

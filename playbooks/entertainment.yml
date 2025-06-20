@@ -1,0 +1,9 @@
+---
+- name: Setup DevOps & k3s development environment
+  hosts: localhost
+  become: true
+
+  roles:
+    - cerbaire.minimserver
+    - cerbaire.music
+...

@@ -1,0 +1,8 @@
+---
+# tasks file for roles/language
+- name: Install java-related tools
+  ansible.builtin.import_tasks: java.yml
+
+- name: Install python-related tools
+  ansible.builtin.import_tasks: python.yml
+...

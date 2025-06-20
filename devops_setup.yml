@@ -1,0 +1,7 @@
+---
+- name: Setup DevOps environment
+  hosts: localhost
+  become: true
+  roles:
+    - cerbaire.devops_setup
+...

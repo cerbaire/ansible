@@ -1,2 +1,3 @@
-Nicolas-Asus-PC.localdomain: development
-Nicolas-Dell-PC.localdomain: entertainment
+group_map:
+  Nicolas-Asus-PC.localdomain: development
+  Nicolas-Dell-PC.localdomain: entertainment

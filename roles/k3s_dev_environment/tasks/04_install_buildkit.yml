@@ -20,13 +20,13 @@
     create_home: true # Creates home dir if it doesn't exist
   when: not buildkitd_stat.stat.exists or ansible_check_mode # Only if not installed
 
-- name: Download and install BuildKit {{ buildkit_version }}
+- name: Download and install BuildKit {{ k3s_dev_environment_buildkit_version }}
   when: not buildkitd_stat.stat.exists or ansible_check_mode
   block:
     - name: Download BuildKit archive
       ansible.builtin.get_url:
-        url: "https://github.com/moby/buildkit/releases/download/{{ buildkit_version }}/buildkit-{{ buildkit_version }}.linux-amd64.tar.gz"
-        dest: "/tmp/buildkit-{{ buildkit_version }}.linux-amd64.tar.gz"
+        url: "https://github.com/moby/buildkit/releases/download/{{ k3s_dev_environment_buildkit_version }}/buildkit-{{ k3s_dev_environment_buildkit_version }}.linux-amd64.tar.gz"
+        dest: "/tmp/buildkit-{{ k3s_dev_environment_buildkit_version }}.linux-amd64.tar.gz"
         mode: '0644'
       register: buildkit_archive_download
     - name: Create temporary directory for BuildKit extraction

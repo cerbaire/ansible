@@ -7,13 +7,13 @@
       kind: Namespace
       metadata:
         name: "{{ k3s_dev_environment_registry_namespace }}"
-    kubeconfig: "{{ kubeconfig_path }}"
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
 
 - name: Deploy local Docker registry using static YAML manifest
   kubernetes.core.k8s:
     state: present
     src: "{{ role_path }}/files/local-registry-k8s.yaml"
-    kubeconfig: "{{ kubeconfig_path }}"
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
   register: registry_apply_status
 
 - name: Wait for local registry deployment to be ready
@@ -22,7 +22,7 @@
     kind: Deployment
     name: "{{ k3s_dev_environment_registry_deployment_name }}"
     namespace: "{{ k3s_dev_environment_registry_namespace }}"
-    kubeconfig: "{{ kubeconfig_path }}"
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
   register: registry_deploy_info
   until: >
     registry_deploy_info.resources is defined and
@@ -34,3 +34,4 @@
   retries: 30
   delay: 10
   when: registry_apply_status.changed # Only wait if we applied/changed something
+...

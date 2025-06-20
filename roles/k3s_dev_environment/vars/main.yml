@@ -6,7 +6,7 @@ k3s_dev_environment_dev_user: "nicolas"
 
 # Tool versions (verify latest stable versions when running)
 k3s_dev_environment_k3s_version: "v1.33.0+k3s1"
-k3s_dev_environment_helm_version: "v3.18.0"
+
 # Should ideally match K3s major.minor
 k3s_dev_environment_kubectl_version: "v1.33.0"
 k3s_dev_environment_buildkit_version: "v0.22.0"

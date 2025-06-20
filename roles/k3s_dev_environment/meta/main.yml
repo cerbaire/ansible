@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: Nicolas ROQUEBERT <nicolas@roquebert.net>
+  role_name: k3s_dev_environment
+  
+  license: GPL-2.0-or-later
+
+  min_ansible_version: '2.1'
+
+dependencies:
+  - role: helm
+...

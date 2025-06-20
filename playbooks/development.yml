@@ -1,6 +1,8 @@
 ---
 - name: Setup DevOps & k3s development environment
   hosts: localhost
+  connection: local
+  gather_facts: false
   become: true
   pre_tasks:
     - name: Ensure apt cache is up to date

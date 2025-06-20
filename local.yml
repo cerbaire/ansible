@@ -1,17 +1,22 @@
-- hosts: localhost
-  become: true
-  pre_tasks:
-    - name: update repositories
-      apt: update_cache=yes
-      changed_when: False
+---
+- name: Run group-specific playbook based on hostname
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - group_map.yml
 
   tasks:
-    - ansible.builtin.import_tasks: tasks/env.yml
-    - ansible.builtin.import_tasks: tasks/coding.yml
-    - ansible.builtin.import_tasks: tasks/music.yml
-    - name: Install packages
-      ansible.builtin.apt:
-        pkg:
-          - htop
-          - mc
-          - tmux
+    - name: Lookup group for current hostname
+      ansible.builtin.set_fact:
+        current_group: "{{ lookup('dict', group_map)[ansible_hostname] | default('unknown') }}"
+
+    - name: Fail if hostname is not mapped
+      ansible.builtin.fail:
+        msg: "Hostname '{{ ansible_hostname }}' not mapped in group_map.yml"
+      when: current_group == 'unknown'
+
+    - name: Include the group-specific playbook
+      ansible.builtin.include_tasks: "playbooks/{{ current_group }}.yml"
+...

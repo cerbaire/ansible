@@ -73,15 +73,29 @@
         state: absent
       when: terraform_archive_download.dest is defined
 
-- name: Download Helm install script
-  ansible.builtin.get_url:
-    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-    dest: /tmp/get-helm-3.sh
-    mode: '0755'
+# - name: Download Helm install script
+#   ansible.builtin.get_url:
+#     url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+#     dest: /tmp/get-helm-3.sh
+#     mode: '0755'
 
-- name: Install Helm
-  ansible.builtin.shell: |
-    set -o pipefail
-    bash /tmp/get-helm-3.sh
+# - name: Install Helm
+#   ansible.builtin.shell: |
+#     set -o pipefail
+#     bash /tmp/get-helm-3.sh
+#   args:
+#     creates: /usr/local/bin/helm
+# Simple version to install Helm
+# Check https://stackoverflow.com/questions/75343804/better-way-to-install-helm-with-ansible for better way to do
+- name: Install helm if not exists
+  unarchive:
+    src: https://get.helm.sh/helm-v3.18.3-linux-amd64.tar.gz
+    dest: /usr/local/bin
+    extra_opts: "--strip-components=1"
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: true
   args:
     creates: /usr/local/bin/helm
+...

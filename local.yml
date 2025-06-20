@@ -2,7 +2,7 @@
 - name: Run group-specific playbook based on hostname
   hosts: localhost
   connection: local
-  gather_facts: false
+  gather_facts: true
 
   vars_files:
     - group_map.yml

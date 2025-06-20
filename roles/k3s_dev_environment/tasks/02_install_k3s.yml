@@ -17,13 +17,13 @@
     mode: '0755'
   register: k3s_script_download
 
-- name: Install K3s {{ k3s_version }}
+- name: Install K3s {{ k3s_dev_environment_k3s_version }}
   when: (not k3s_binary_stat.stat.exists or not k3s_kubeconfig_stat.stat.exists)
   ansible.builtin.command: # Using command to handle environment variables for script
     cmd: "/tmp/k3s-install.sh"
   environment:
     INSTALL_K3S_EXEC: "{{ k3s_install_args | default('') }}"
-    INSTALL_K3S_VERSION: "{{ k3s_version | default('v1.30.1+k3s1') }}"
+    INSTALL_K3S_VERSION: "{{ k3s_dev_environment_k3s_version | default('v1.30.1+k3s1') }}"
   register: k3s_install_run
 
 - name: Ensure K3s service is enabled and started

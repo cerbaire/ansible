@@ -4,7 +4,7 @@
   # Most tasks require sudo
   become: true
   vars_files:
-    - roles/k3s_dev_environment/vars/main.yml # Defines user, versions etc.
+    - roles/k3s_dev_environment/vars/main.yml
   pre_tasks:
     - name: Ensure python3-pip is present
       ansible.builtin.apt:

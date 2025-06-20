@@ -2,23 +2,18 @@
 - name: Run group-specific playbook based on hostname
   hosts: localhost
   connection: local
-  gather_facts: true
+  gather_facts: false
 
   tasks:
     - name: Lookup group for current hostname
       ansible.builtin.set_fact:
-        current_group: "{{ group_map[ansible_hostname] | default('unknown') }}"
+        current_group: "{{ lookup('dict', group_map)[ansible_hostname] | default('unknown') }}"
 
     - name: Fail if hostname is not mapped
       ansible.builtin.fail:
         msg: "Hostname '{{ ansible_hostname }}' not mapped in group_map.yml"
       when: current_group == 'unknown'
 
-- name: Run playbook for development
-  import_playbook: playbooks/development.yml
-  when: group_map[ansible_hostname] == "development"
-
-- name: Run playbook for entertainment
-  import_playbook: playbooks/entertainment.yml
-  when: group_map[ansible_hostname] == "entertainment"
+    - name: Include the group-specific playbook
+      ansible.builtin.include_tasks: "playbooks/{{ current_group }}.yml"
 ...

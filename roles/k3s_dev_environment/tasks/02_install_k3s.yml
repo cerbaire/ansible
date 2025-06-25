@@ -1,4 +1,5 @@
 # roles/k3s_dev_environment/tasks/02_install_k3s.yml
+---
 - name: Check if K3s is already installed (via k3s binary)
   ansible.builtin.stat:
     path: "{{ k3s_dev_environment_local_bin_path }}/k3s"
@@ -37,4 +38,24 @@
     path: "/etc/rancher/k3s/k3s.yaml"
     timeout: 120 # Increased timeout for slower systems/VMs
     delay: 10
+
+- name: Ensure k3s systemd drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/k3s.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Override k3s ExecStart with custom arguments
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/k3s.service.d/override.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/local/bin/k3s {{ k3s_dev_environment_k3s_custom_exec_args | default('server') }}
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload systemd and restart k3s
 ...

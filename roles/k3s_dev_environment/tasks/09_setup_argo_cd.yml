@@ -1,0 +1,52 @@
+---
+- name: Create argocd namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: argocd
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
+
+- name: Install ArgoCD core components
+  kubernetes.core.k8s:
+    state: present
+    src: "https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml"
+    namespace: argocd
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
+
+- name: Wait for ArgoCD server deployment to be ready
+  kubernetes.core.k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: argocd-server
+    namespace: argocd
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
+  register: argocd_server_info
+  until: >
+    argocd_server_info.resources is defined and
+    argocd_server_info.resources | length > 0 and
+    argocd_server_info.resources[0].status is defined and
+    argocd_server_info.resources[0].status.readyReplicas is defined and
+    argocd_server_info.resources[0].status.readyReplicas | int >= 1
+  retries: 30
+  delay: 10
+
+- name: Expose ArgoCD API server via NodePort
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: argocd-server
+        namespace: argocd
+      spec:
+        type: NodePort
+        ports:
+          - port: 80
+            targetPort: 8080
+            nodePort: 30080
+    kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
+...

@@ -78,13 +78,6 @@
     mode: '0644'
   notify: Reload systemd and restart buildkitd
 
-- name: Ensure BuildKit service is enabled and started
-  ansible.builtin.systemd_service:
-    name: buildkitd
-    enabled: true
-    state: started
-    daemon_reload: true # Ensure this happens if unit file changed via notify
-
 - name: Add {{ k3s_dev_environment_dev_user }} to the {{ k3s_dev_environment_buildkit_group }} group for socket access
   ansible.builtin.user:
     name: "{{ k3s_dev_environment_dev_user }}"

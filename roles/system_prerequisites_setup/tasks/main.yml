@@ -3,11 +3,11 @@
 - name: Ensure CA certificates are installed and updated
   ansible.builtin.apt:
     name: ca-certificates
-    state: latest
+    state: present
     update_cache: true
   become: true
 
 - name: Update certificate authority store
-  command: update-ca-certificates
+  ansible.builtin.command: update-ca-certificates
   become: true
 ...

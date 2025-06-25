@@ -3,6 +3,8 @@
 # IMPORTANT: Set this to the non-root user you want to configure the environment for
 # <<< CHANGE THIS to your actual Linux username
 k3s_dev_environment_dev_user: "nicolas"
+# <<< CHANGE THIS to your actual Windows username
+k3s_dev_environment_windows_user: "nicolas.roquebert"
 
 # Tool versions (verify latest stable versions when running)
 k3s_dev_environment_k3s_version: "v1.33.1+k3s1"
@@ -44,3 +46,5 @@ k3s_dev_environment_tilt_sample_image_name: "tilt-sample-app-image" # This place
 
 # System paths
 k3s_dev_environment_local_bin_path: "/usr/local/bin"
+
+k3s_dev_environment_k3s_custom_exec_args: "server --advertise-address=0.0.0.0"

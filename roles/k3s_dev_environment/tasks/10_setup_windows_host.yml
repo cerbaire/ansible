@@ -1,0 +1,72 @@
+---
+- name: Gather facts
+  ansible.builtin.setup:
+
+- name: Check if running under WSL2
+  ansible.builtin.shell: cat /proc/sys/kernel/osrelease
+  register: kernel_osrelease
+  changed_when: false
+
+- name: Set is_wsl2 fact
+  ansible.builtin.set_fact:
+    is_wsl2: "{{ 'microsoft' in kernel_osrelease.stdout | lower and 'wsl2' in kernel_osrelease.stdout | lower }}"
+
+- name: Debug WSL2 detection
+  ansible.builtin.debug:
+    msg: "This is WSL2!"
+  when: is_wsl2
+
+- name: Ensure Windows .kube directory exists
+  ansible.builtin.file:
+    path: "/mnt/c/Users/{{ k3s_dev_environment_windows_user }}/.kube"
+    state: directory
+    mode: '0755'
+  when: is_wsl2
+
+- name: Get WSL2 hostname
+  ansible.builtin.command: hostname
+  register: wsl2_hostname
+  changed_when: false
+  when: is_wsl2
+
+- name: Copy kubeconfig to Windows
+  ansible.builtin.copy:
+    src: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
+    dest: "/mnt/c/Users/{{ k3s_dev_environment_windows_user }}/.kube/config"
+    mode: '0644'
+  when: is_wsl2
+
+# - name: Replace server address in Windows kubeconfig
+#   ansible.builtin.replace:
+#     path: "/mnt/c/Users/{{ k3s_dev_environment_windows_user }}/.kube/config"
+#     regexp: 'server: https://.*:6443'
+#     replace: "server: https://{{ wsl2_hostname.stdout }}:6443"
+#   when: is_wsl2
+
+- name: Get WSL2 IPv4 address
+  ansible.builtin.command: hostname -I
+  register: wsl2_ip
+  changed_when: false
+  when: is_wsl2
+
+- name: Replace server address in Windows kubeconfig with IPv4
+  ansible.builtin.replace:
+    path: "/mnt/c/Users/{{ k3s_dev_environment_windows_user }}/.kube/config"
+    regexp: 'server: https://.*:6443'
+    replace: "server: https://{{ wsl2_ip.stdout.split()[0] }}:6443"
+  when: is_wsl2
+
+- name: Download kubectl.exe to Windows user directory
+  ansible.builtin.get_url:
+    url: "https://dl.k8s.io/release/v1.30.1/bin/windows/amd64/kubectl.exe"
+    dest: "/mnt/c/Users/{{ k3s_dev_environment_windows_user }}/bin/kubectl.exe"
+    mode: '0755'
+  when: is_wsl2
+
+- name: Download ArgoCD CLI for Windows
+  ansible.builtin.get_url:
+    url: "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-windows-amd64.exe"
+    dest: "/mnt/c/Users/{{ k3s_dev_environment_windows_user }}/bin/argocd.exe"
+    mode: '0755'
+  when: is_wsl2
+...

@@ -1,4 +1,5 @@
 # roles/k3s_dev_environment/tasks/main.yml
+---
 - name: Include preparation tasks
   ansible.builtin.include_tasks: 00_prepare_system.yml
 
@@ -27,3 +28,10 @@
 
 # - name: Include Tilt sample project setup tasks
 #   ansible.builtin.include_tasks: 08_setup_sample_tilt_project.yml
+
+- name: Include Setup ArgoCD tasks
+  ansible.builtin.include_tasks: 09_setup_argo_cd.yml
+
+- name: Include Setup Windows Host tasks
+  ansible.builtin.include_tasks: 10_setup_windows_host.yml
+...

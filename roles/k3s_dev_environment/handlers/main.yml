@@ -1,20 +1,18 @@
 # roles/k3s_dev_environment/handlers/main.yml
-- name: Reload systemd
-  ansible.builtin.systemd_service: # Use systemd_service for daemon_reload
+- name: Reload systemd and restart k3s
+  ansible.builtin.systemd:
     daemon_reload: true
-  listen: Reload systemd and restart buildkitd
-
-- name: Restart buildkitd
-  ansible.builtin.systemd_service:
-    name: buildkitd
-    state: restarted
-  listen: Reload systemd and restart buildkitd
-
-- name: Restart K3s
-  ansible.builtin.systemd_service:
     name: k3s
     state: restarted
-  listen: Restart K3s # Ensure tasks notify "Restart K3s"
+  listen: Reload systemd and restart k3s
+
+- name: Reload systemd and restart buildkitd
+  ansible.builtin.systemd:
+    name: buildkitd
+    enabled: true
+    state: started
+    daemon_reload: true
+  listen: Reload systemd and restart buildkitd
 
 - name: UserReloginNeeded
   ansible.builtin.debug:

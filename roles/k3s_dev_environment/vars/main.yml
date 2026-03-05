@@ -31,11 +31,12 @@ k3s_dev_environment_buildkit_tcp_addr: "tcp://127.0.0.1:1234" # For buildkitd to
 
 # Local Registry configuration
 k3s_dev_environment_registry_namespace: "local-registry"
-k3s_dev_environment_registry_deployment_name: "local-docker-registry" # Must match metadata.name in local-registry-k8s.yaml
-k3s_dev_environment_registry_service_name: "local-registry-service"   # Must match metadata.name in local-registry-k8s.yaml
+k3s_dev_environment_registry_deployment_name: "local-docker-registry" # Must match metadata.name in local-registry-k8s.yaml.j2
+k3s_dev_environment_registry_service_name: "local-registry-service"   # Must match metadata.name in local-registry-k8s.yaml.j2
 k3s_dev_environment_registry_image: "registry:2"
 k3s_dev_environment_registry_node_port: 30500 # Port on the host to access the registry
 k3s_dev_environment_registry_host_address: "localhost" # How BuildKit/Tilt will address the registry
+k3s_dev_environment_registry_storage_host_path: "/mnt/cmeta/data/registry"
 
 # Tilt Sample Project
 k3s_dev_environment_default_sample_lang: "go" # Options: go, typescript, python, csharp, rust, java

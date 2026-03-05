@@ -9,10 +9,26 @@
         name: "{{ k3s_dev_environment_registry_namespace }}"
     kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
 
-- name: Deploy local Docker registry using static YAML manifest
+- name: Ensure local registry hostPath exists
+  ansible.builtin.file:
+    path: "{{ k3s_dev_environment_registry_storage_host_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Render local Docker registry manifest
+  ansible.builtin.template:
+    src: local-registry-k8s.yaml.j2
+    dest: /tmp/local-registry-k8s.yaml
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Deploy local Docker registry manifest
   kubernetes.core.k8s:
     state: present
-    src: "{{ role_path }}/files/local-registry-k8s.yaml"
+    src: /tmp/local-registry-k8s.yaml
     kubeconfig: "/home/{{ k3s_dev_environment_dev_user }}/.kube/config"
   register: registry_apply_status
 

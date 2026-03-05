@@ -1,0 +1,60 @@
+# roles/k3s_dev_environment/templates/local-registry-k8s.yaml.j2
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ k3s_dev_environment_registry_namespace }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ k3s_dev_environment_registry_deployment_name }}
+  namespace: {{ k3s_dev_environment_registry_namespace }}
+  labels:
+    app: {{ k3s_dev_environment_registry_deployment_name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ k3s_dev_environment_registry_deployment_name }}
+  template:
+    metadata:
+      labels:
+        app: {{ k3s_dev_environment_registry_deployment_name }}
+    spec:
+      containers:
+        - name: registry
+          image: "{{ k3s_dev_environment_registry_image }}"
+          ports:
+            - containerPort: 5000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: registry-storage
+              mountPath: /var/lib/registry
+      volumes:
+        - name: registry-storage
+          hostPath:
+            path: "{{ k3s_dev_environment_registry_storage_host_path }}"
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ k3s_dev_environment_registry_service_name }}
+  namespace: {{ k3s_dev_environment_registry_namespace }}
+spec:
+  selector:
+    app: {{ k3s_dev_environment_registry_deployment_name }}
+  ports:
+    - name: registry-http
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+      nodePort: {{ k3s_dev_environment_registry_node_port }}
+  type: NodePort

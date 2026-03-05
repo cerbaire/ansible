@@ -63,6 +63,8 @@ This Ansible project sets up a complete development environment on a single Linu
     ```yaml
     # roles/k3s_dev_environment/vars/main.yml
     k3s_dev_environment_dev_user: "your_username" # <<< CHANGE THIS to your actual non-root username
+    # Local registry storage hostPath
+    k3s_dev_environment_registry_storage_host_path: "/mnt/cmeta/data/registry"
     # ... other variables for tool versions, ports, etc.
     ```
 4.  **Ensure Python and pip are installed on the target host:**
